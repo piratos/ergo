@@ -3,15 +3,14 @@ import logging as log
 
 from ergo.project import Project
 
-def usage():
-    print("usage: ergo view <path>")
-    quit()
+def view_args(subparsers, name, desc):
+    parser = subparsers.add_parser(name, description=desc)
+    parser.add_argument("project_path", help="project path to view info about")
+    parser.set_defaults(func=action_view)
 
-def action_view(argc, argv):
-    if argc < 1:
-        usage()
+def action_view(args):
 
-    prj = Project(argv[0])
+    prj = Project(args.project_path)
     err = prj.load()
     if err is not None:
         log.error("error while loading project: %s", err)

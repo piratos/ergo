@@ -33,7 +33,11 @@ def mem_fmt(num, suffix='B'):
         num /= 1024.0
     return "%.1f %s%s" % (num, 'Yi', suffix)
 
-def action_info(argc, argv):
+def info_args(subparsers, name, desc):
+    parser = subparsers.add_parser(name, description=desc)
+    parser.set_defaults(func=action_info)
+
+def action_info(args):
     print(banner.strip("\n") % (__version__, keras.__version__, tf.__version__))
     print("")
     print("Hardware:\n")

@@ -13,20 +13,21 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import sys
 import collections
 import logging as log
+import argparse
 
 log.basicConfig(format = '[%(asctime)s] (%(levelname)s) %(message)s', level = log.INFO)
 
 from ergo.core.action import Action
 
-from ergo.actions.info import action_info
-from ergo.actions.create import action_create
-from ergo.actions.optimize import action_optimize_dataset
-from ergo.actions.train import action_train
-from ergo.actions.clean import action_clean
-from ergo.actions.view import action_view
-from ergo.actions.compare import action_compare
-from ergo.actions.serve import action_serve
-from ergo.actions.to_fdeep import action_to_fdeep
+from ergo.actions.info import info_args
+from ergo.actions.create import create_args
+from ergo.actions.optimize import optimize_args
+from ergo.actions.train import train_args
+from ergo.actions.clean import clean_args
+from ergo.actions.view import view_args
+from ergo.actions.compare import compare_args
+from ergo.actions.serve import serve_args
+from ergo.actions.to_fdeep import tofdeep_args
 
 def get_pad(l):
     pad = 0
@@ -35,47 +36,37 @@ def get_pad(l):
             pad = len(name)
     return pad
 
-def action_help(argc=0, argv=None):
-    print("usage: ergo <action> [args]")
-
-    global ACTIONS 
-    pad = get_pad(ACTIONS)
-    print("\n  actions:\n")
-    for name in ACTIONS:
-        print( ("\t%" + str(pad) + "s : %s") % ( name, ACTIONS[name].description ) )
-
-    quit()
-
 ACTIONS = collections.OrderedDict([
-    ("help", Action("help", "Print the usage menu.", action_help)),
-    ("info", Action("info", "Print library versions and hardware info.", action_info)),
-    ("create", Action("create", "Create a new project.", action_create)),
-    ("optimize-dataset", Action("optimize-dataset", "Perform dataset optimization (removes duplicates and keep a given amount from the main dataset).", action_optimize_dataset)),
-    ("train", Action("train", "Train a model (use --dataset /path/file.csv to import a dataset the first time).", action_train)),
-    ("clean", Action("clean", "Clean a project from temporary datasets (use --all to reset a project state).", action_clean)),
-    ("view", Action("view", "View a model structure and accuracy metrics over training.", action_view)),
-    ("cmp", Action("cmp", "Evaluate performances of two models against a given dataset.", action_compare)),
-    ("serve", Action("serve", "Serve a pretrained model via a REST API.", action_serve)),
-    ("to-fdeep", Action("to-fdeep", "Convert a Keras model to fdeep format.", action_to_fdeep))
+    ("info", Action("info", "Print library versions and hardware info.", info_args)),
+    ("create", Action("create", "Create a new project.", create_args)),
+    ("optimize-dataset", Action("optimize-dataset", "Perform dataset optimization (removes duplicates and keep a given amount from the main dataset).", optimize_args)),
+    ("train", Action("train", "Train a model (use --dataset /path/file.csv to import a dataset the first time).", train_args)),
+    ("clean", Action("clean", "Clean a project from temporary datasets (use --all to reset a project state).", clean_args)),
+    ("view", Action("view", "View a model structure and accuracy metrics over training.", view_args)),
+    ("cmp", Action("cmp", "Evaluate performances of two models against a given dataset.", compare_args)),
+    ("serve", Action("serve", "Serve a pretrained model via a REST API.", serve_args)),
+    ("to-fdeep", Action("to-fdeep", "Convert a Keras model to fdeep format.", tofdeep_args))
 ])
 
+
 def main():
-    argc   = len(sys.argv)
-    action = sys.argv[1] if argc >= 2 else None 
+    parser = argparse.ArgumentParser()
+    # print help message if we run ergo without argument
+    parser.set_defaults(func=lambda x: parser.print_help())
+    subparsers = parser.add_subparsers(title="Available commands")
 
-    if action is None:
-        action_help()
+    # add parser from all the actions
+    for action in ACTIONS.values():
+        action.cb(subparsers, name=action.name, desc=action.description)
 
-    elif action not in ACTIONS:
-        log.error("unknown action %s" % action)
-        action_help()
+    # parse args and run the appropriate function
+    args = parser.parse_args()
 
-    else:
-        try:
-            ACTIONS[action].cb(argc - 2, sys.argv[2:])
-        except Exception as e:
-            log.critical("%s", e)
-            # log.exception("\n\n")
+    try:
+        args.func(args)
+    except Exception as e:
+        log.critical("%s", e)
+    return 
 
 if __name__ == '__main__':
     main()
