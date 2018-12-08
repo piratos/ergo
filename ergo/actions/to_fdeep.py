@@ -497,15 +497,14 @@ def convert(model, out_path):
     write_text_file(out_path, json.dumps(
         json_output, allow_nan=False, indent=2, sort_keys=True))
 
-def usage():
-    print("usage: ergo to-fdeep <path>")
-    quit()
+def tofdeep_args(subparsers, name, desc):
+    parser = subparsers.add_parser(name, description=desc)
+    parser.add_argument("project_path", help="project path to convert to fdeep")
+    parser.set_defaults(func=action_to_fdeep)
 
-def action_to_fdeep(argc, argv):
-    if argc < 1:
-        usage()
+def action_to_fdeep(args):
 
-    prj = Project(argv[0])
+    prj = Project(args.project_path)
     err = prj.load()
     if err is not None:
         log.error("error while loading project: %s", err)

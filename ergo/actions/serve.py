@@ -27,26 +27,19 @@ def route():
         log.error("%s", e)
         return str(e), 400
 
-def parse_args(argv):
-    parser = argparse.ArgumentParser(description="server")
-    parser.add_argument("--host", dest = "host", action = "store", type = str)
-    parser.add_argument("--port", dest = "port", action = "store", type = int, default = 8080)
-    parser.add_argument("--debug", dest = "debug", action = "store_true", default = False)
-    args = parser.parse_args(argv)
-    return args
+def serve_args(subparsers, name, desc):
+    parser = subparsers.add_parser(name, description=desc)
+    parser.add_argument("project_path", help="Path to the trained project")
+    parser.add_argument("--host", dest = "host", action = "store", type = str, help="serve address")
+    parser.add_argument("--port", dest = "port", action = "store", type = int, default = 8080, help="serve port")
+    parser.add_argument("--debug", dest = "debug", action = "store_true", default = False, help="activate debug mode")
+    parser.set_defaults(func=action_serve)
 
-def usage():
-    print("usage: ergo serve <path>")
-    quit()
-
-def action_serve(argc, argv):
+def action_serve(args):
     global prj, app
 
-    if argc < 1:
-        usage()
-
-    args = parse_args(argv[1:])
-    prj = Project(argv[0])
+    print(args.project_path, type(args.project_path))
+    prj = Project(args.project_path)
     err = prj.load()
     if err is not None:
         log.error("error while loading project: %s", err)

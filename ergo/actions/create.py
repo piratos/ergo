@@ -4,15 +4,15 @@ import logging as log
 
 from ergo.project import Project
 
-def usage():
-    log.info("usage: ergo create <path>")
-    quit()
 
-def action_create(argc, argv):
-    if argc != 1:
-        usage()
-    
-    path = argv[0]
+def create_args(subparsers, name, desc):
+    parser = subparsers.add_parser(name, description=desc)
+    parser.add_argument("project_path", help="new project path")
+    parser.set_defaults(func=action_create)
+
+def action_create(args):
+
+    path = args.project_path
 
     if os.path.exists(path):
         log.error("path %s already exists" % path)
@@ -22,7 +22,3 @@ def action_create(argc, argv):
     os.makedirs(path, exist_ok=True)
 
     Project.create(path)
-
-
-
-

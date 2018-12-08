@@ -8,16 +8,12 @@ from terminaltables import AsciiTable
 
 from ergo.project import Project
 
-def usage():
-    print("usage: ergo cmp <path_1> <path_2> --dataset <path> (--to-json <file>)")
-    quit()
-
-def parse_args(argv):
-    parser = argparse.ArgumentParser(description="comparer")
+def compare_args(subparsers, name, desc):
+    parser = subparsers.add_parser(name, description="compare two projects")
+    parser.add_argument("projects_paths", nargs=2, help="path of the two projects to compare")
     parser.add_argument("-d", "--dataset", dest = "dataset", action = "store", type = str, required = True)
     parser.add_argument("-j", "--to-json", dest = "to_json", action = "store", type = str, required = False)
-    args = parser.parse_args(argv)
-    return args
+    parser.set_defaults(func=action_compare)
 
 def red(s):
     return "\033[31m" + s + "\033[0m"
@@ -30,15 +26,12 @@ def default(o):
     if isinstance(o, np.int64): return int(o)  
     raise TypeError
 
-def action_compare(argc, argv):
-    if argc < 4:
-        usage()
+def action_compare(args):
 
-    args     = parse_args(argv[2:])
     metrics  = {}
     projects = { \
-        argv[0]: None,
-        argv[1]: None,
+        args.projects_paths[0]: None,
+        args.projects_paths[1]: None,
     }
     ref       = None
     inp_shape = None

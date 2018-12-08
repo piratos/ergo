@@ -10,10 +10,6 @@ def probability(x):
         raise argparse.ArgumentTypeError("%r not in range [0.0 - 1.0]" % x )
     return x
 
-def usage():
-    print("usage: ergo train <path> [args]")
-    quit()
-
 def validate_args(args):
     if args.dataset is not None and not os.path.exists(args.dataset):
         log.error("file %s does not exist" % args.dataset)
@@ -27,22 +23,20 @@ def validate_args(args):
         log.error("using less than 50% of the dataset for training")
         quit()
 
-def parse_args(argv):
-    parser = argparse.ArgumentParser(description="trainer")
+def train_args(subparsers, name, desc):
+    parser = subparsers.add_parser(name, description=desc)
+    parser.add_argument("project_path", help="project path to train")
     parser.add_argument("-d", "--dataset", dest = "dataset", action = "store", type = str, required = False)
     parser.add_argument("-g", "--gpus", dest = "gpus", action = "store", type = int, default = 0)
     parser.add_argument("-t", "--test", dest = "test", action = "store", type = probability, default = 0.15, required = False)
     parser.add_argument("-v", "--validation", dest = "validation", action = "store", type = probability, default = 0.15, required = False)
     parser.add_argument("--no-save", dest="no_save", action="store_true", default = False, help = "Do not save temporary datasets on disk.")
-    args = parser.parse_args(argv)
+    parser.set_defaults(func=action_train)
+
+def action_train(args):
+
     validate_args(args)
-    return args
-
-def action_train(argc, argv):
-    if argc < 1:
-        usage()
-
-    prj = Project(argv[0])
+    prj = Project(args.project_path)
     err = prj.load()
     if err is not None:
         log.error("error while loading project: %s", err)

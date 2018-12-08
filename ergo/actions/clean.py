@@ -3,19 +3,11 @@ import argparse
 
 from ergo.project import Project
 
-def usage():
-    print("usage: ergo clean <path> [args]")
-    quit()
-
-def parse_args(argv):
-    parser = argparse.ArgumentParser(description="cleaner")
+def clean_args(subparsers, name, desc):
+    parser = subparsers.add_parser(name, description="cleaner")
+    parser.add_argument("project_path", help="project path")
     parser.add_argument("-a", "--all", dest = "all", action = "store_true", default = False, help = "Remove model weights and training data.")
-    args = parser.parse_args(argv)
-    return args
+    parser.set_defaults(func=action_clean)
 
-def action_clean(argc, argv):
-    if argc < 1:
-        usage()
-
-    args = parse_args(argv[1:])
-    Project.clean(argv[0], args.all)
+def action_clean(args):
+    Project.clean(args.project_path, args.all)

@@ -10,23 +10,17 @@ def probability(x):
         raise argparse.ArgumentTypeError("%r not in range [0.0 - 1.0]" % x )
     return x
 
-def usage():
-    print("usage: ergo optimize-dataset <filename> [args]")
-    quit()
 
-def parse_args(argv):
-    parser = argparse.ArgumentParser(description="optimizer")
+def optimize_args(subparsers, name, desc):
+    parser = subparsers.add_parser(name, description="optimizer")
+    parser.add_argument("project_path", help="project path to optimize its dataset")
     parser.add_argument("-r", "--reuse-ratio", dest = "reuse", action = "store", type = probability, default = 0.15)
     parser.add_argument("-o", "--output", dest = "output", action = "store", type = str, default = None)
-    args = parser.parse_args(argv)
-    return args
+    parser.set_defaults(func=action_optimize_dataset)
 
-def action_optimize_dataset(argc, argv):
-    if argc < 1:
-        usage()
+def action_optimize_dataset(args):
 
-    args = parse_args(argv[1:])
-    path = os.path.abspath(argv[0])
+    path = os.path.abspath(args.project_path)
     if not os.path.exists(path):
         log.error("dataset file %s does not exist", path)
         quit()
