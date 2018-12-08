@@ -16,7 +16,11 @@ setup( name                 = 'ergo',
        author_email         = __email__,
        url                  = 'http://www.github.com/evilsocket/ergo',
        packages             = find_packages(),
-       scripts              = [ 'bin/ergo' ],
+       entry_points={
+           'console_scripts': [
+               'ergo = ergo.__init__:main'
+           ]
+       },
        license              = __license__,
        classifiers          = [
             'Programming Language :: Python :: 3',
