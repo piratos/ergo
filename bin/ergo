@@ -26,7 +26,7 @@ from ergo.actions.train import train_args
 from ergo.actions.clean import clean_args
 from ergo.actions.view import view_args
 from ergo.actions.compare import compare_args
-from ergo.actions.serve import serve_args_args
+from ergo.actions.serve import serve_args
 from ergo.actions.to_fdeep import tofdeep_args
 
 def get_pad(l):
@@ -51,6 +51,8 @@ ACTIONS = collections.OrderedDict([
 
 def main():
     parser = argparse.ArgumentParser()
+    # print help message if we run ergo without argument
+    parser.set_defaults(func=lambda x: parser.print_help())
     subparsers = parser.add_subparsers(title="Available commands")
 
     # add parser from all the actions
@@ -59,6 +61,7 @@ def main():
 
     # parse args and run the appropriate function
     args = parser.parse_args()
+
     try:
         args.func(args)
     except Exception as e:
